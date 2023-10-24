@@ -219,7 +219,6 @@ app.get("/files/:date", (req, res) => {
               const sortedFilesFilter = sortedFiles.filter(
                 (x) => x.type == "Testpro"
               )
-
               checkFileDb(sortedFilesFilter)
 
               res.json(sortedFilesFilter)
