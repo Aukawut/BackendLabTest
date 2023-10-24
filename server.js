@@ -24,10 +24,7 @@ const io = new Server(server, {
   },
 })
 connectDB()
-app.get("/hash", async (req, res) => {
-  const hashedPassword = await bcrypt.hash(`%24nC%40202311M%40S`, 10)
-  res.json(hashedPassword)
-})
+
 app.get("/", async (req, res) => {
   const fileAll = await LabTest.find({})
 
