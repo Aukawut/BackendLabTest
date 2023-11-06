@@ -11,6 +11,8 @@ const LabTest = require("./Models/LabTest")
 const bodyParser = require("body-parser")
 const moment = require("moment")
 const bcrypt = require("bcrypt")
+
+const ping = require('ping');
 require("dotenv").config()
 app.use(express.static(path.join(__dirname, "public")))
 const PORT = process.env.PORT
@@ -25,6 +27,7 @@ const io = new Server(server, {
 })
 connectDB()
 
+
 app.get("/", async (req, res) => {
   const fileAll = await LabTest.find({})
 
@@ -33,14 +36,22 @@ app.get("/", async (req, res) => {
     file: fileAll,
   })
 })
-
+app.get("/test",(req,res) => {
+  fs.readdir("s:\\TestDataSave", (err, isFiles) => {
+    if (err) {
+      console.log(err)
+    }else{
+      res.json(isFiles)
+    }
+  })
+})
 app.get("/files", async (req, res) => {
   const allFiles = await LabTest.find({}).sort({ mtimeMs: -1 })
   if (allFiles) {
     res.json({
       err: false,
-      files: allFiles,
-    })
+      files: allFiles
+    });
   }
 })
 
@@ -241,7 +252,7 @@ app.get("/files/:date", (req, res) => {
 
 // Function Check Status
 const CheckStatusRun = (dateCheck) => {
-  const folderPathRoot = "../TestData/TestDataSave"
+  const folderPathRoot = "s:/TestDataSave"
   const covertDate = (create, modified) => {
     const start = moment(create, "D/M/YYYY HH:mm:ss").local("th")
     const end = moment(modified, "D/M/YYYY HH:mm:ss").local("th")
@@ -271,8 +282,8 @@ const CheckStatusRun = (dateCheck) => {
       let dateFolder = isFiles.filter((val) => val == dateCheck)
       if (dateFolder?.length > 0) {
         const folderPath = path.join(
-          __dirname,
-          `../TestData/TestDataSave/${dateCheck}/TestProjectData`
+         
+          `s:/TestDataSave/${dateCheck}/TestProjectData`
         )
         fs.readdir(folderPath, (err, files) => {
           if (err) {
@@ -386,8 +397,18 @@ setInterval(() => {
   const m = parseInt(date.split("-")[1])
   const d = parseInt(date.split("-")[2])
   let dateThai = `${d}/${m}/${year}`
+  ping.sys.probe('10.1.8.76', (isAlive) => {
+    if(isAlive){
+      emitFile(dateThai)
+   
+    }else{
+      io.emit("resultsByDate", [])
 
-  emitFile(dateThai)
+      console.log("Office");
+    }
+ 
+});
+
 }, 5000)
 
 io.on("connection", (socket) => {
